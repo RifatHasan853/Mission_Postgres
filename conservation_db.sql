@@ -68,4 +68,62 @@ WHERE NOT EXISTS (
     SELECT species_id
     FROM sightings si
     WHERE si.species_id = s.species_id
+
+);
+
+
+--6️⃣ Show the most recent 2 sightings.
+
+SELECT 
+
+sp.common_name,
+si.sighting_time,
+r.name  
+FROM sightings si 
+JOIN species sp ON si.species_id=sp.species_id
+JOIN  rangers r ON si.ranger_id=r.ranger_id
+ORDER BY
+si.sighting_time DESC
+LIMIT 2;
+
+
+
+--7️⃣ Update all species discovered before year 1800 to have status 'Historic'.
+UPDATE species
+set conservation_status='Historic'
+WHERE extract(YEAR FROM discovery_date)<1800;
+
+SELECT * from species;
+
+--8️⃣ Label each sighting's time of day as 'Morning', 'Afternoon', or 'Evening'.
+
+-- Create the function
+CREATE OR REPLACE FUNCTION get_time_of_day(timestamp_value TIMESTAMP)
+RETURNS TEXT AS $$
+DECLARE
+    hour_of_day INT;
+BEGIN
+    hour_of_day := EXTRACT(HOUR FROM timestamp_value);
+    
+    RETURN CASE
+        WHEN hour_of_day < 12 THEN 'Morning'
+        WHEN hour_of_day < 17 THEN 'Afternoon' -- 12 PM to 4:59 PM
+        ELSE 'Evening' -- 5 PM onward
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Use the function in your query
+SELECT 
+    sighting_id,
+    get_time_of_day(sighting_time) AS time_of_day
+FROM sightings;
+
+
+--9️⃣ Delete rangers who have never sighted any species
+
+DELETE FROM rangers
+WHERE ranger_id NOT IN (
+    SELECT DISTINCT ranger_id 
+    FROM sightings
 );
