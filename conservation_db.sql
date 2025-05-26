@@ -107,8 +107,8 @@ BEGIN
     
     RETURN CASE
         WHEN hour_of_day < 12 THEN 'Morning'
-        WHEN hour_of_day < 17 THEN 'Afternoon' -- 12 PM to 4:59 PM
-        ELSE 'Evening' -- 5 PM onward
+        WHEN hour_of_day < 17 THEN 'Afternoon'
+        ELSE 'Evening' 
     END;
 END;
 $$ LANGUAGE plpgsql;
